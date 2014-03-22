@@ -77,9 +77,9 @@ namespace CSharpTest.Net.Commands
 
 		public FilterChainItem(ICommandInterpreter ci, ICommandFilter filter, ICommandChain next)
 		{
-			_ci = Check.NotNull(ci);
-			_filter = Check.NotNull(filter);
-			_next = Check.NotNull(next);
+			_ci = ci;
+			_filter = filter;
+			_next = next;
 		}
 
 		public void Next(string[] arguments)

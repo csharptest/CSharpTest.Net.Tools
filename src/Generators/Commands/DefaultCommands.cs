@@ -14,7 +14,6 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using CSharpTest.Net.Utils;
 using System.IO;
 using System.Reflection;
 
@@ -53,8 +52,6 @@ namespace CSharpTest.Net.Commands
 		PipeCommands = 0x00000100,
 		/// <summary> A command filter that allows redirect of std in/out to files. </summary>
 		IORedirect = 0x00000200,
-        /// <summary> A command that allows the console application to be hosted as a restful HTTP server. </summary>
-        HostHTTP = 0x00000400
 	}
 
     partial class CommandInterpreter

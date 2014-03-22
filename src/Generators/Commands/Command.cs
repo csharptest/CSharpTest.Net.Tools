@@ -15,7 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using CSharpTest.Net.Utils;
 using System.Diagnostics;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -56,10 +55,10 @@ namespace CSharpTest.Net.Commands
 			}
 			_arguments = tempList.ToArray();
 
-			if (Description == mi.ToString())
+			if (base.Description == mi.ToString())
             {//if no description provided, let's build a better one
                 StringBuilder sb = new StringBuilder();
-                sb.AppendFormat("{0} ", this.DisplayName);
+                sb.AppendFormat("{0} ", base.DisplayName);
                 foreach(Argument a in tempList)
 					if(a.Visible)
 						sb.AppendFormat("{0} ", a.FormatSyntax(a.DisplayName));

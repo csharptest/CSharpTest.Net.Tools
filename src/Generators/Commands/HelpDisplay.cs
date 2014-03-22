@@ -14,12 +14,12 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using CSharpTest.Net.IO;
 
 namespace CSharpTest.Net.Commands
 {
@@ -48,7 +48,7 @@ namespace CSharpTest.Net.Commands
         }
 
 		/// <summary> Display the Help text to Console.Out </summary>
-		[Command("Help", "-?", "/?", "?", Category = "Built-in", Description = "Gets the help for a specific command or lists available commands.")]
+        [Command("Help", "-?", "/?", "?", "--help", Category = "Built-in", Description = "Gets the help for a specific command or lists available commands.")]
 		public void Help(
 			[Argument("name", "command", "c", "option", "o", Description = "The name of the command or option to show help for.", DefaultValue = null)] 
 			string name,
@@ -78,126 +78,184 @@ namespace CSharpTest.Net.Commands
         {
             if (!viewAsHtml)
             {
-                if (items.Length == 1)
-                    items[0].Help();
-                else
-                    ShowHelp(items);
+                ShowHelp(items);
             }
             else
             {
-                using (TempFile temp = TempFile.FromExtension(".htm"))
-                {
-                    temp.WriteAllText(GenerateHtml(items));
-                    System.Diagnostics.Process.Start(temp.TempPath);
-                }
+                var path = Path.Combine(Path.GetTempPath(), AppDomain.CurrentDomain.FriendlyName + ".htm");
+                File.WriteAllText(path, GenerateHtml(items));
+                System.Diagnostics.Process.Start(path);
             }
         }
 
 	    private string GenerateHtml(params IDisplayInfo[] items)
-        {
+	    {
+	        Assembly exec = Assembly.GetEntryAssembly()
+	                        ?? Assembly.GetCallingAssembly();
+
+	        var programName = Process.GetCurrentProcess().ProcessName;
+
             using (StringWriter sw = new StringWriter())
             using (XmlTextWriter w = new XmlTextWriter(sw))
             {
                 w.Formatting = System.Xml.Formatting.Indented;
                 w.WriteStartElement("html");
                 w.WriteStartElement("head");
-                w.WriteElementString("title", Constants.ProcessName + " Help");
+                {
+                    w.WriteElementString("title", programName + " Help");
+
+                    w.WriteStartElement("link");
+                    w.WriteAttributeString("rel", "stylesheet");
+                    w.WriteAttributeString("href", "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css");
+                    w.WriteEndElement();
+
+                    //w.WriteStartElement("link");
+                    //w.WriteAttributeString("rel", "stylesheet");
+                    //w.WriteAttributeString("href", "http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css");
+                    //w.WriteEndElement();
+
+                    w.WriteStartElement("style");
+                    w.WriteAttributeString("type", "text/css");
+                    w.WriteString(@"
+body { padding: 20px; }
+blockquote { font-size: inherit; }
+");
+                    w.WriteEndElement();
+                }
                 w.WriteEndElement();
                 w.WriteStartElement("body");
                 {
                     w.WriteElementString("h1", "Usage:");
                     w.WriteStartElement("p");
-                    w.WriteElementString("pre", String.Format("C:\\> {0} COMMAND [arguments]", Constants.ProcessName));
+                    w.WriteElementString("pre", String.Format("C:\\> {0} COMMAND [arguments]", programName));
                     w.WriteEndElement();
-                    w.WriteElementString("p", System.Diagnostics.FileVersionInfo.GetVersionInfo(Constants.ProcessFile).Comments);
+                    w.WriteElementString("p", System.Diagnostics.FileVersionInfo.GetVersionInfo(exec.Location).Comments);
 
-                    w.WriteElementString("h1", "Options:");
-                    w.WriteStartElement("ul");
+                    var options = new List<IOption>();
+                    var commands = new List<ICommand>();
+
                     foreach (IDisplayInfo info in items)
                     {
-                        IOption option = info as IOption;
-                        if (option == null || !info.Visible)
-                            continue;
-                        w.WriteStartElement("li");
-                        w.WriteElementString("strong", String.Format("/{0}={1}",  info.AllNames[0], option.Type.Name));
-                        w.WriteRaw(" ");
-                        w.WriteString(info.Description.TrimEnd('.'));
-                        w.WriteString(".");
-                        w.WriteEndElement();
-
+                        if (info.Visible && info is IOption)
+                            options.Add((IOption)info);
+                        else if (info.Visible && info is ICommand)
+                            commands.Add((ICommand)info);
                     }
-                    w.WriteStartElement("li");
-                    w.WriteElementString("strong", "/nologo");
-                    w.WriteString(" hides the startup message.");
-                    w.WriteEndElement();
-                    w.WriteEndElement();
+                    items = null;
 
-                    w.WriteElementString("h1", "Commands:");
-                    foreach (IDisplayInfo info in items)
+                    if (options.Count > 0)
                     {
-                        ICommand command = info as ICommand;
-                        if (command == null || !info.Visible)
-                            continue;
+                        w.WriteElementString("h1", "Options:");
+                        w.WriteStartElement("ul");
+                        foreach (IOption option in options)
+                        {
+                            w.WriteStartElement("li");
+                            w.WriteElementString("strong", String.Format("/{0}={1}", option.AllNames[0], option.Type.Name));
+                            w.WriteRaw(" ");
+                            w.WriteString(option.Description.TrimEnd('.'));
+                            w.WriteString(".");
+                            w.WriteEndElement();
 
-                        w.WriteElementString("h3", command.DisplayName);
-                        int argCount = 0;
-                        w.WriteStartElement("blockquote");
-                        {
-                            w.WriteElementString("p", info.Description.TrimEnd('.') + ".");
-                            w.WriteElementString("strong", "Usage:");
-                            w.WriteStartElement("p");
-                            w.WriteStartElement("pre");
-                            w.WriteString(String.Format("C:\\> {0} {1} ", Constants.ProcessName, command.AllNames[0].ToUpper()));
-                            foreach (Argument arg in command.Arguments)
-                            {
-                                if (arg.Visible == false || arg.Type == typeof(ICommandInterpreter))
-                                    continue;
-                                if (arg.IsAllArguments)
-                                {
-                                    w.WriteString("[argument1] [argument2] [etc]");
-                                    continue;
-                                }
-                                argCount++;
-                                w.WriteString(String.Format("{0} ", arg.FormatSyntax(arg.DisplayName)));
-                            }
-                            w.WriteEndElement();
-                            w.WriteEndElement();
                         }
-                        if (argCount > 0)
+                        w.WriteEndElement();
+                    }
+                    if (commands.Count > 0)
+                    {
+                        w.WriteElementString("h1", "Commands:");
+                        foreach (ICommand command in commands)
                         {
-                            w.WriteStartElement("p");
-                            w.WriteElementString("strong", "Arguments:");
-                            w.WriteEndElement();
-                            w.WriteStartElement("ul");
-                            foreach (Argument arg in command.Arguments)
+                            w.WriteElementString("h3", command.DisplayName);
+                            int argCount = 0;
+                            w.WriteStartElement("blockquote");
                             {
-                                if (arg.Visible == false || arg.Type == typeof(ICommandInterpreter))
-                                    continue;
-                                if (arg.IsAllArguments)
-                                    continue;
-                                w.WriteStartElement("li");
-                                w.WriteElementString("strong", arg.FormatSyntax(arg.DisplayName));
-                                if (!arg.Required && arg.DefaultValue != null)
-                                    w.WriteString(String.Format(" = ({0})", arg.DefaultValue));
-                                w.WriteString(" - " + arg.Description.TrimEnd('.') + ".");
+                                w.WriteElementString("p", command.Description.TrimEnd('.') + ".");
+                                w.WriteElementString("strong", "Usage:");
+                                w.WriteStartElement("p");
+                                w.WriteStartElement("pre");
+                                w.WriteString(String.Format("C:\\> {0} {1} ", programName, command.AllNames[0].ToUpper()));
+                                foreach (IArgument arg in command.Arguments)
+                                {
+                                    if (arg.Visible == false || arg.IsInterpreter)
+                                        continue;
+                                    if (arg.IsAllArguments)
+                                    {
+                                        w.WriteString("[argument1] [argument2] [etc]");
+                                        continue;
+                                    }
+                                    argCount++;
+                                    w.WriteString(String.Format("{0} ", arg.FormatSyntax(arg.DisplayName)));
+                                }
+                                w.WriteEndElement();
                                 w.WriteEndElement();
                             }
+                            if (argCount > 0)
+                            {
+                                w.WriteStartElement("p");
+                                w.WriteElementString("strong", "Arguments:");
+                                w.WriteEndElement();
+                                w.WriteStartElement("ul");
+                                foreach (IArgument arg in command.Arguments)
+                                {
+                                    if (arg.Visible == false || arg.IsInterpreter)
+                                        continue;
+                                    if (arg.IsAllArguments)
+                                        continue;
+                                    w.WriteStartElement("li");
+                                    w.WriteElementString("strong", arg.FormatSyntax(arg.DisplayName));
+                                    if (!arg.Required && arg.DefaultValue != null)
+                                        w.WriteString(String.Format(" = ({0})", arg.DefaultValue));
+                                    w.WriteString(" - " + arg.Description.TrimEnd('.') + ".");
+                                    w.WriteEndElement();
+                                }
+                                w.WriteEndElement();
+                            }
+
+                            w.WriteEndElement();
+                            //w.WriteStartElement("hr");
+                            //w.WriteEndElement();
+                        }
+                        w.WriteEndElement();
+                    }
+                    w.WriteStartElement("p");
+                    w.WriteStartElement("hr");
+                    w.WriteEndElement();
+
+                    var entryAssembly = Assembly.GetEntryAssembly();
+                    if (entryAssembly != null)
+                    {
+                        w.WriteStartElement("div");
+                        w.WriteAttributeString("class", "text-muted");
+                        {
+                            w.WriteString(String.Format("{0}", entryAssembly.GetName()));
+                            w.WriteStartElement("br");
+                            w.WriteEndElement();
+                            foreach (AssemblyCopyrightAttribute a in entryAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false))
+                                w.WriteString(a.Copyright);
+                            w.WriteStartElement("br");
                             w.WriteEndElement();
                         }
-
                         w.WriteEndElement();
-                        //w.WriteStartElement("hr");
-                        //w.WriteEndElement();
                     }
+                    w.WriteEndElement();
                 }
-                w.WriteEndElement();
                 w.WriteEndElement();
                 w.Flush();
                 return sw.ToString();
             }
         }
 
-	    private void ShowHelp(IDisplayInfo[] items)
+        /// <summary>
+        /// Can be overridden to control or rewrite help output
+        /// </summary>
+        protected virtual void ShowHelp(IDisplayInfo[] items)
+        {
+            if (items.Length == 1)
+                items[0].Help();
+            else
+                ShowHelpFor(items);
+        }
+
+	    private void ShowHelpFor(IDisplayInfo[] items)
 		{
 			Dictionary<string, List<IDisplayInfo>> found = new Dictionary<string, List<IDisplayInfo>>(StringComparer.OrdinalIgnoreCase);
 			foreach (IDisplayInfo item in items)
@@ -214,17 +272,25 @@ namespace CSharpTest.Net.Commands
 					list.Add(item);
 			}
 
-			string fmt = "  {0,8}:  {1}";
-
 			List<string> categories = new List<string>(found.Keys);
 			categories.Sort();
 			foreach (string cat in categories)
 			{
 				Console.Out.WriteLine("{0}:", cat);
 				found[cat].Sort(new OrderByName<IDisplayInfo>());
-				foreach (IDisplayInfo info in found[cat])
-					Console.Out.WriteLine(fmt, info.DisplayName.ToUpper(), info.Description);
-				Console.WriteLine();
+
+                int indent = 6;
+			    foreach (IDisplayInfo info in found[cat])
+			    {
+			        if (info.DisplayName.Length > indent)
+			            indent = info.DisplayName.Length;
+			    }
+			    string fmt = "  {0," + indent + "}:  {1}";
+                foreach (IDisplayInfo info in found[cat])
+                {
+			        Console.Out.WriteLine(fmt, info.DisplayName.ToUpper(), info.Description);
+			    }
+			    Console.WriteLine();
 			}
 		}
 	}
@@ -237,11 +303,9 @@ namespace CSharpTest.Net.Commands
 			foreach (string name in this.AllNames)
 			{
 				Console.Write("{0} ", name.ToUpper());
-				bool nameRequred = false;
-				foreach (Argument arg in Arguments)
-				{
-					nameRequred |= arg.IsInterpreter | arg.IsAllArguments;
-					if (arg.IsInterpreter)
+			    foreach (IArgument arg in Arguments)
+                {
+                    if (arg.Visible == false || arg.IsInterpreter)
 						continue;
 					if (arg.IsAllArguments)
 					{
@@ -264,9 +328,9 @@ namespace CSharpTest.Net.Commands
 			Console.WriteLine();
 
 			bool startedArgs = false;
-			foreach (Argument arg in Arguments)
-			{
-				if (arg.IsInterpreter | arg.IsAllArguments)
+			foreach (IArgument arg in Arguments)
+            {
+                if (arg.Visible == false || arg.IsInterpreter || arg.IsAllArguments)
 					continue;
 				if (!startedArgs)
 				{
@@ -288,7 +352,7 @@ namespace CSharpTest.Net.Commands
 			if (!IsFlag) sb.Append('[');
 			sb.Append('/');
 			sb.Append(name);
-			if (!IsFlag) sb.AppendFormat("=]{0}", Type.Name);
+            if (!IsFlag) sb.AppendFormat("=]{0}", UnderlyingType.Name);
 			if (!Required) sb.Append(']');
 			return sb.ToString();
 		}
@@ -297,7 +361,7 @@ namespace CSharpTest.Net.Commands
 		{
 			Console.Write("  {0}", FormatSyntax(DisplayName));
 
-			if(!Required && !IsFlag)
+            if (!Required && !IsFlag && DefaultValue != null)
 				Console.Write(" ({0})", this.DefaultValue);
 
 			List<string> alt = new List<string>(AllNames);

@@ -38,7 +38,7 @@ namespace CSharpTest.Net.GeneratorsTest
 #if NET20 || NET35
                     AppDomain.CurrentDomain.Evidence,
 #endif
-                    new string[] { "Config" });
+                    new string[] { "/nologo", "Config" });
             }
             finally
             {

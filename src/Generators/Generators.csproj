@@ -56,6 +56,7 @@
     <Compile Include="Collections\SetList.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Commands\Argument.cs" />
+    <Compile Include="Commands\ArgumentList.cs" />
     <Compile Include="Commands\Attributes.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandFilter.cs" />
@@ -68,21 +69,18 @@
     <Compile Include="Commands\Option.cs" />
     <Compile Include="CsWriter.cs" />
     <Compile Include="FauxProject.cs" />
-    <Compile Include="Html\HtmlLightDocument.cs" />
-    <Compile Include="Html\XhtmlValidation.cs" />
     <Compile Include="Html\XmlLightAttributes.cs" />
     <Compile Include="Html\XmlLightDocument.cs" />
     <Compile Include="Html\XmlLightElement.cs" />
     <Compile Include="Html\XmlLightInterfaces.cs" />
     <Compile Include="Html\XmlLightNavigator.cs" />
     <Compile Include="Html\XmlLightParser.cs" />
-    <Compile Include="IO\TempDirectory.cs" />
     <Compile Include="IO\TempFile.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Processes\IRunner.cs" />
     <Compile Include="Processes\ProcessExitedEventArgs.cs" />
     <Compile Include="Processes\ProcessOutputEventArgs.cs" />
     <Compile Include="Processes\ProcessRunner.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -100,15 +98,7 @@
     <Compile Include="ResX\Writers\ResxException.cs" />
     <Compile Include="ResX\Writers\ResxExceptionString.cs" />
     <Compile Include="ResX\Writers\ResxString.cs" />
-    <Compile Include="Shared\ArgumentList.cs" />
-    <Compile Include="Shared\Check.cs" />
-    <Compile Include="Shared\Configuration.cs" />
-    <Compile Include="Shared\FileList.cs" />
-    <Compile Include="Shared\ProcessInfo.cs" />
-    <Compile Include="Shared\PublicShared.cs" />
-    <Compile Include="Shared\QuickLog.cs" />
-    <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\FileUtils.cs" />
+    <Compile Include="Utils\Check.cs" />
     <Compile Include="Utils\RegexPatterns.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -127,12 +117,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Html\Xhtml1_0\xhtml-lat1.ent" />
-    <None Include="Html\Xhtml1_0\xhtml-special.ent" />
-    <None Include="Html\Xhtml1_0\xhtml-symbol.ent" />
-    <None Include="Html\Xhtml1_0\xhtml1-frameset.dtd" />
-    <None Include="Html\Xhtml1_0\xhtml1-strict.dtd" />
-    <None Include="Html\Xhtml1_0\xhtml1-transitional.dtd" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

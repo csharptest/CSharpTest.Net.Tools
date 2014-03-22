@@ -152,12 +152,15 @@ namespace CSharpTest.Net.Generators
             string cscOptions
             )
         {
-            TempDirectory tempDir = null;
+            string tempDir = null;
             try
             {
-                intermediateFiles = intermediateFiles == "%TEMP%"
-                                        ? (tempDir = new TempDirectory()).TempPath
-                                        : Path.GetFullPath(Environment.ExpandEnvironmentVariables(intermediateFiles));
+                if (intermediateFiles == "%TEMP%")
+                {
+                    intermediateFiles = tempDir = Path.GetTempFileName();
+                    File.Delete(intermediateFiles);
+                }
+                else intermediateFiles = Path.GetFullPath(Environment.ExpandEnvironmentVariables(intermediateFiles));
 
                 string mcFile = Path.Combine(intermediateFiles, Path.GetFileNameWithoutExtension(outputFile) + ".mc");
 
@@ -174,7 +177,7 @@ namespace CSharpTest.Net.Generators
 
                 if (!String.IsNullOrEmpty(versionInfo))
                     mc.VersionInfo.ReadFrom(versionInfo);
-                
+
                 if (!String.IsNullOrEmpty(toolsBin))
                     mc.ToolsBin = toolsBin;
 
@@ -182,14 +185,20 @@ namespace CSharpTest.Net.Generators
             }
             catch
             {
-                if(tempDir != null)
-                    tempDir.Detatch();// for diagnostics we allow this to leak if we fail
                 tempDir = null;
             }
             finally
             {
                 if (tempDir != null)
-                    tempDir.Dispose();
+                {
+                    try
+                    {
+                        Directory.Delete(tempDir, true);
+                    }
+                    catch
+                    {
+                    }
+                }
             }
         }
     }

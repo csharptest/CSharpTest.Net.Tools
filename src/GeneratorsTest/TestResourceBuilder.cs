@@ -148,10 +148,8 @@ namespace CSharpTest.Net.GeneratorsTest
 
         public static string FindExe(string exeName)
         {
-            string found;
-
-            if (FileUtils.TrySearchPath(exeName, out found))
-                return found;
+            try { return Processes.ProcessRunner.FindFullPath(exeName); }
+            catch { }
 
             foreach (string env in new string[] { "ProgramFiles(x86)", "ProgramFiles", "ProgramW6432" })
             {

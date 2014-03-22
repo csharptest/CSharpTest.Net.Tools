@@ -14,6 +14,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Diagnostics;
 using System.IO;
@@ -54,7 +55,7 @@ namespace CSharpTest.Net.Processes
 		/// <summary>Creates a ProcessRunner for the given executable and arguments </summary>
 		public ProcessRunner(string executable, params string[] args)
 		{
-			_executable = Utils.FileUtils.FindFullPath(Check.NotEmpty(executable));
+			_executable = FindFullPath(Check.NotEmpty(executable));
 			_arguments = args == null ? EmptyArgList : args;
 
 			_isRunning = false;
@@ -80,7 +81,7 @@ namespace CSharpTest.Net.Processes
     	/// <summary> Returns a debug-view string of process/arguments to execute </summary>
 		public override string ToString()
 		{
-			return String.Format("{0} {1}", _executable, ArgumentList.EscapeArguments(_arguments));
+			return String.Format("{0} {1}", _executable, EscapeArguments(_arguments));
 		}
 
 		/// <summary> Notifies caller of writes to the std::err or std::out </summary>
@@ -247,7 +248,7 @@ namespace CSharpTest.Net.Processes
 			_stdIn = null;
 			_running = new Process();
 
-			string stringArgs = ArgumentList.EscapeArguments(arguments);
+			string stringArgs = EscapeArguments(arguments);
 			ProcessStartInfo psi = new ProcessStartInfo(_executable, stringArgs);
 			psi.WorkingDirectory = this.WorkingDirectory;
 
@@ -273,7 +274,76 @@ namespace CSharpTest.Net.Processes
 			_running.BeginErrorReadLine();
 		}
 
-		private void OnOutputReceived(ProcessOutputEventArgs args)
+
+        /// <summary>
+        /// Returns the fully qualified path to the file if it is fully-qualified, exists in the current directory, or 
+        /// in the environment path, otherwise generates a FileNotFoundException exception.
+        /// </summary>
+        [System.Diagnostics.DebuggerNonUserCode]
+        public static string FindFullPath(string location)
+        {
+            if (File.Exists(location))
+            {
+                return Path.GetFullPath(location);
+            }
+
+            location = Environment.ExpandEnvironmentVariables(location);
+            if (File.Exists(location))
+            {
+                return Path.GetFullPath(location);
+            }
+
+            foreach (string pathentry in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';'))
+            {
+                try
+                {
+                    string testPath = Path.Combine(pathentry.Trim(), location);
+                    if (File.Exists(testPath))
+                        return Path.GetFullPath(testPath);
+                }
+                catch
+                { }
+            }
+
+            throw new FileNotFoundException(new FileNotFoundException().Message, location);
+        }
+
+        /// <summary>
+        /// Quotes all arguments that contain whitespace, or begin with a quote and returns a single
+        /// argument string for use with Process.Start().
+        /// </summary>
+        /// <param name="args">A list of strings for arguments, may not contain null, '\0', '\r', or '\n'</param>
+        /// <returns>The combined list of escaped/quoted strings</returns>
+        /// <exception cref="System.ArgumentNullException">Raised when one of the arguments is null</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Raised if an argument contains '\0', '\r', or '\n'</exception>
+        public static string EscapeArguments(params string[] args)
+        {
+            StringBuilder arguments = new StringBuilder();
+            Regex invalidChar = new Regex("[\x00\x0a\x0d]");//  these can not be escaped
+            Regex needsQuotes = new Regex(@"\s|""");//          contains whitespace or two quote characters
+            Regex escapeQuote = new Regex(@"(\\*)(""|$)");//    one or more '\' followed with a quote or end of string
+            for (int carg = 0; args != null && carg < args.Length; carg++)
+            {
+                if (args[carg] == null) { throw new ArgumentNullException("args[" + carg + "]"); }
+                if (invalidChar.IsMatch(args[carg])) { throw new ArgumentOutOfRangeException("args[" + carg + "]"); }
+                if (args[carg] == String.Empty) { arguments.Append("\"\""); }
+                else if (!needsQuotes.IsMatch(args[carg])) { arguments.Append(args[carg]); }
+                else
+                {
+                    arguments.Append('"');
+                    arguments.Append(escapeQuote.Replace(args[carg], m =>
+                    m.Groups[1].Value + m.Groups[1].Value +
+                    (m.Groups[2].Value == "\"" ? "\\\"" : "")
+                    ));
+                    arguments.Append('"');
+                }
+                if (carg + 1 < args.Length)
+                    arguments.Append(' ');
+            }
+            return arguments.ToString();
+        }
+
+        private void OnOutputReceived(ProcessOutputEventArgs args)
 		{
 			lock (this)
 			{

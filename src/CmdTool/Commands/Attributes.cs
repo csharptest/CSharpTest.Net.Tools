@@ -86,7 +86,7 @@ namespace CSharpTest.Net.Commands
 		/// <summary> Returns the DisplayName </summary>
 		public string DisplayName { get { return _displayName; } set { _displayName = value; } }
 		/// <summary> Just the alias names </summary>
-		public string[] AliasNames { get { return (string[])_aliasNames.Clone(); } set { _aliasNames = Check.NotNull(value); } }
+		public string[] AliasNames { get { return (string[])_aliasNames.Clone(); } set { _aliasNames = value; } }
 		/// <summary> Returns the name list </summary>
 		public string[] AllNames
 		{
@@ -94,7 +94,7 @@ namespace CSharpTest.Net.Commands
 			{
 				List<string> names = new List<string>();
 				if (_displayName != null) names.Add(_displayName);
-				names.AddRange(_aliasNames);
+				names.AddRange(_aliasNames ?? new string[0]);
 				return names.ToArray();
 			}
 		}

@@ -161,16 +161,13 @@ namespace CSharpTest.Net.Processes
 		private TempFile SetExePath(string script)
 		{
 			_executable = script.Trim();
-			_executable = FileUtils.ExpandEnvironment(_executable);
+			_executable = Environment.ExpandEnvironmentVariables(_executable);
 			if (!Path.IsPathRooted(_executable))
 			{
-				string found;
 				if (File.Exists(_executable))
 					_executable = Path.GetFullPath(_executable);
-				else if(FileUtils.TrySearchPath(_executable, out found))
-					_executable = found;
 				else
-					throw new FileNotFoundException(new FileNotFoundException().Message, script.Trim());
+                    _executable = ProcessRunner.FindFullPath(_executable);
 			}
             
 			_fileExtension = Path.GetExtension(script.Trim());

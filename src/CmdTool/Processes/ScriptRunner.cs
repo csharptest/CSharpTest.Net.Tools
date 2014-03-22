@@ -14,6 +14,7 @@
 #endregion
 using System;
 using System.IO;
+using CSharpTest.Net.Commands;
 using CSharpTest.Net.IO;
 using CSharpTest.Net.Utils;
 

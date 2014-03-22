@@ -102,6 +102,11 @@ namespace CSharpTest.Net.Commands
         /// Returns an HTML document for help on all items (when item == null) or a specific item.
         /// </summary>
 	    string GetHtmlHelp(string item);
+
+        /// <summary>
+        /// Sets all options to their defined DefaultValue if supplied.
+        /// </summary>
+	    void SetDefaults();
 	}
 
 	/// <summary>
@@ -148,7 +153,15 @@ namespace CSharpTest.Net.Commands
 		/// <summary> Returns the default value if Required == false </summary>
 		object DefaultValue { get; }
 		/// <summary> Returns the type of the argument </summary>
-		Type Type { get; }
+        Type Type { get; }
+        /// <summary> Returns true if the property is a boolean switch </summary>
+	    bool IsFlag { get; }
+        /// <summary> Returns true if this parameter is of type ICommandInterpreter </summary>
+        bool IsInterpreter { get; }
+        /// <summary> Returns true if this parameter is decorated with the [AllArguments] attribute </summary>
+        bool IsAllArguments { get; }
+        /// <summary> Writes the default syntax formatting for the argument using the provided name/alias </summary>
+	    string FormatSyntax(string name);
 	}
 
 	/// <summary>
@@ -192,6 +205,8 @@ namespace CSharpTest.Net.Commands
 		object Value { get; set; }
 		/// <summary> Returns the type of the option value </summary>
 		Type Type { get; }
+        /// <summary> Returns the default value or NULL if undefined </summary>
+	    object DefaultValue { get; }
 	}
 
 	// Internal sorter for display name

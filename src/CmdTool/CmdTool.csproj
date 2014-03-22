@@ -94,6 +94,7 @@
     <Compile Include="CodeGenerator\AssemblyRunnerCache.cs" />
     <Compile Include="Collections\SetList.cs" />
     <Compile Include="Commands\Argument.cs" />
+    <Compile Include="Commands\ArgumentList.cs" />
     <Compile Include="Commands\Attributes.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandFilter.cs" />
@@ -132,14 +133,10 @@
     <Compile Include="CodeGenerator\GeneratorArguments.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="CodeGenerator\IGeneratorArguments.cs" />
-    <Compile Include="Shared\ArgumentList.cs" />
     <Compile Include="Shared\Check.cs" />
     <Compile Include="Shared\Configuration.cs" />
     <Compile Include="Shared\FileList.cs" />
-    <Compile Include="Shared\ProcessInfo.cs" />
     <Compile Include="Shared\QuickLog.cs" />
-    <Compile Include="Utils\Constants.cs" />
-    <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\RegexPatterns.cs" />
     <Compile Include="VsInterop\BaseCodeGenerator.cs" />
     <Compile Include="VsInterop\BaseCodeGeneratorWithSite.cs" />
@@ -183,9 +180,6 @@
     <EmbeddedResource Include="CmdTool.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <None Include="..\..\..\keys\csharptest.net.snk">
-      <Link>Properties\csharptest.net.snk</Link>
-    </None>
     <None Include="App.config" />
     <EmbeddedResource Include="CmdTool.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -196,6 +190,7 @@
     <None Include="Html\Xhtml1_0\xhtml1-frameset.dtd" />
     <None Include="Html\Xhtml1_0\xhtml1-strict.dtd" />
     <None Include="Html\Xhtml1_0\xhtml1-transitional.dtd" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="LICENSE-2.0.txt">

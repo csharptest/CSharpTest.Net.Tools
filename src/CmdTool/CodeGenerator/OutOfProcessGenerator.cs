@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using CSharpTest.Net.Commands;
 using CSharpTest.Net.CustomTool.XmlConfig;
 using CSharpTest.Net.IO;
 using CSharpTest.Net.Processes;
@@ -41,18 +42,15 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
         public string CreateFullPath(string path)
         {
             path = path.Trim();
-            path = FileUtils.ExpandEnvironment(path);
+            path = Environment.ExpandEnvironmentVariables(path);
             if (!Path.IsPathRooted(path))
             {
-                string found;
                 if (File.Exists(Path.Combine(_config.BaseDirectory, path)))
                     path = Path.GetFullPath(Path.Combine(_config.BaseDirectory, path));
                 else if (File.Exists(path))
                     path = Path.GetFullPath(path);
-                else if (FileUtils.TrySearchPath(path, out found))
-                    path = found;
-                else
-                    throw new FileNotFoundException(new FileNotFoundException().Message, path.Trim());
+                else 
+                    path = Processes.ProcessRunner.FindFullPath(path);
             }
             return path;
         }

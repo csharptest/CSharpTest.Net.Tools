@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
-using CSharpTest.Net.Utils;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -30,7 +29,7 @@ namespace CSharpTest.Net.Commands
 	/// </summary>
 	public partial class CommandInterpreter : ICommandInterpreter
 	{
-		readonly Dictionary<string, ICommand> _commands;
+        readonly Dictionary<string, ICommand> _commands;
 		readonly Dictionary<string, IOption> _options;
 		readonly List<ICommandFilter> _filters;
 		readonly BuiltInCommands _buildInCommands;
@@ -40,7 +39,7 @@ namespace CSharpTest.Net.Commands
 		private string _prompt;
 		private string _filterPrecedence;
 
-		/// <summary>
+	    /// <summary>
 		/// Constructs a command-line interpreter from the objects and/or System.Types provided.
 		/// </summary>
 		public CommandInterpreter(params object[] handlers)
@@ -174,7 +173,7 @@ namespace CSharpTest.Net.Commands
 
 		/// <summary> Gets/sets the prompt, use "$(OptionName)" to reference options </summary>
 		[Option(Category = "Built-in", Description = "Gets or sets the text to display to prompt for input use \"$(OptionName)\" to reference options.")]
-		public string Prompt { get { return _prompt; } set { _prompt = Check.NotNull(value); } }
+		public string Prompt { get { return _prompt; } set { _prompt = value ?? String.Empty; } }
 
 		/// <summary>
 		/// Lists all the commands that have been added to the interpreter
@@ -243,7 +242,19 @@ namespace CSharpTest.Net.Commands
 			return value;
 		}
 
-        /// <summary> Command to set the value of an option </summary>
+	    /// <summary>
+	    /// Sets all options to their defined DefaultValue if supplied.
+	    /// </summary>
+	    public void SetDefaults()
+	    {
+	        foreach (var opt in Options)
+	        {
+                if (!ReferenceEquals(null, opt.DefaultValue))
+                    opt.Value = opt.DefaultValue;
+	        }
+	    }
+
+	    /// <summary> Command to set the value of an option </summary>
         [IgnoreMember]
 		public void Set(string property, object value) { Set(property, value, false); }
 
@@ -287,7 +298,7 @@ namespace CSharpTest.Net.Commands
 		/// </summary>
 		internal void ProcessCommand(string[] arguments)
 		{
-			if (Check.NotNull(arguments).Length == 0)
+            if (arguments == null || arguments.Length == 0)
 			{
 				Help(null);
 				return;
@@ -305,15 +316,16 @@ namespace CSharpTest.Net.Commands
 			command.Run(this, args.ToArray());
 		}
 
-		class QuitException : Exception { }
+        /// <summary> Used to stop running the interpreter </summary>
+        public sealed class QuitException : OperationCanceledException { }
+
 		[Command("Quit", "Exit", Visible = false)]
 		private void Quit() { throw new QuitException(); }
 
 		/// <summary> called to handle error events durring processing </summary>
 		protected virtual void OnError(Exception error)
 		{
-			Trace.TraceError(error.ToString());
-			if(error is OperationCanceledException || error is QuitException)
+			if(error is OperationCanceledException)
 			{/* Silent */}
 			else
 				Console.Error.WriteLine(error is ApplicationException ? error.Message : error.ToString());
@@ -326,7 +338,7 @@ namespace CSharpTest.Net.Commands
 		public string FilterPrecedence
 		{
 			get { return _filterPrecedence; }
-			set { _filterPrecedence = Check.NotEmpty(value); _head = null; }
+			set { _filterPrecedence = value ?? String.Empty; _head = null; }
 		}
 
 		/// <summary> returns the chained filters </summary>
@@ -364,7 +376,7 @@ namespace CSharpTest.Net.Commands
 		{
             try
             {
-                GetHead().Next(Check.NotNull(arguments));
+                GetHead().Next(arguments ?? new string[0]);
             }
             catch (System.Threading.ThreadAbortException) { throw; }
             catch (QuitException) { throw; }
@@ -385,7 +397,7 @@ namespace CSharpTest.Net.Commands
             TextReader stdin = ConsoleInput.Capture(mapstdin);
             try
             {
-                GetHead().Next(Check.NotNull(arguments));
+                GetHead().Next(arguments ?? new string[0]);
             }
             finally
             {
@@ -454,9 +466,6 @@ namespace CSharpTest.Net.Commands
 		/// <summary> Default inplementation of get keystroke </summary>
 		private Char GetNextCharacter() 
 		{
-			ProcessInfo pi = new ProcessInfo();
-			if (Constants.IsUnitTest)
-				throw new InvalidOperationException();
 			return Console.ReadKey(true).KeyChar; 
 		}
 
@@ -466,7 +475,11 @@ namespace CSharpTest.Net.Commands
 		public ReadNextCharacter ReadNextCharacter
 		{
 			get { return _fnNextCh; }
-			set { _fnNextCh = Check.NotNull(value); }
+			set 
+            {
+                if (value == null) throw new ArgumentNullException();
+                _fnNextCh = value; 
+            }
 		}
 
         /// <summary>

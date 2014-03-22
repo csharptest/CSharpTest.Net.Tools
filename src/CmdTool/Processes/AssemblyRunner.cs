@@ -49,7 +49,7 @@ namespace CSharpTest.Net.Processes
         /// </summary>
 		public AssemblyRunner(string executable)
 		{
-			_executable = FileUtils.FindFullPath(Check.NotEmpty(executable));
+			_executable = ProcessRunner.FindFullPath(executable);
 			AppDomainSetup setup = new AppDomainSetup();
 
 			setup.ApplicationBase = Path.GetDirectoryName(_executable);

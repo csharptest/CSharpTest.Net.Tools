@@ -132,20 +132,30 @@ namespace CSharpTest.Net.Commands
 				InterpreterException.Assert(required == false, "The value for {0} is required.", this.DisplayName);
 				value = defaultValue;
 			}
-			InterpreterException.Assert(value != null || !type.IsValueType, "Can not set value of type {0} to null in {1}.", type, this.DisplayName);
+			InterpreterException.Assert(value != null ||
+                !type.IsValueType || Nullable.GetUnderlyingType(type) != null,
+                "Can not set value of type {0} to null in {1}.", type, this.DisplayName);
 
 		    if (value != null)
 		    {
 		        try
 		        {
-		            if (type.IsEnum && value is string)
-		                value = Enum.Parse(type, value as string, true);
-		            else if (!type.IsAssignableFrom(value.GetType()))
-		                value = Convert.ChangeType(value, type);
+                    var targetType = !type.IsValueType ? type : (Nullable.GetUnderlyingType(type) ?? type);
+
+                    if (targetType.IsEnum && value is string)
+                        value = Enum.Parse(targetType, value as string, true);
+                    if (targetType.IsEnum && Enum.IsDefined(targetType, value))
+                        value = Enum.ToObject(targetType, value);
+                    else if (!targetType.IsAssignableFrom(value.GetType()))
+		                value = Convert.ChangeType(value, targetType);
 		        }
-		        catch (FormatException f)
+		        catch (FormatException fe)
 		        {
-		            throw new InterpreterException(f.Message, f);
+		            throw new InterpreterException(fe.Message, fe);
+		        }
+                catch (ArgumentException ae)
+		        {
+		            throw new InterpreterException(ae.Message, ae);
 		        }
 		    }
 		    return value;

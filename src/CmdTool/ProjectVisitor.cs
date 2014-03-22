@@ -18,7 +18,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using CSharpTest.Net.CustomTool.Projects;
 using CSharpTest.Net.Utils;
-using Microsoft.Build.BuildEngine;
 
 #pragma warning disable 618 //Obsolete warning on new Engine()
 
@@ -60,17 +59,12 @@ namespace CSharpTest.Net.CustomTool
 
 		void MsVisitProjects(VisitProject visitor)
 		{
-			Engine e = new Engine(RuntimeEnvironment.GetRuntimeDirectory());
-            if(e.GetType().Assembly.GetName().Version.Major == 2)
-				try { e.GlobalProperties.SetProperty("MSBuildToolsPath", RuntimeEnvironment.GetRuntimeDirectory()); }
-				catch { }
-
 			foreach (FileInfo file in _projects)
 			{
-				Project prj = new Project(e);
+			    FauxProject prj;
 				try
-				{
-					prj.Load(file.FullName);
+                {
+                    prj = new FauxProject(file.FullName);
 				}
 				catch (Exception ex)
 				{
@@ -79,8 +73,7 @@ namespace CSharpTest.Net.CustomTool
 					continue;
 				}
 
-				visitor(new MsBuildProject(prj));
-				e.UnloadProject(prj);
+				visitor(prj);
 			}
 		}
 

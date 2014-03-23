@@ -11,28 +11,28 @@
     <RootNamespace>CSharpTest.Net.Generators</RootNamespace>
     <AssemblyName>CSharpTest.Net.Generators</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <OutputPath>..\..\bin\</OutputPath>
-    <IntermediateOutputPath>$(OutputPath)obj\$(AssemblyName)\</IntermediateOutputPath>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591</NoWarn>
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>pdbonly</DebugType>
-    <DefineConstants>TRACE;NET20</DefineConstants>
-    <ErrorReport>none</ErrorReport>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>3.5</OldToolsVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

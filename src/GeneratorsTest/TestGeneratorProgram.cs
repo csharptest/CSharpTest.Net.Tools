@@ -34,11 +34,11 @@ namespace CSharpTest.Net.GeneratorsTest
             Console.SetError(serr);
             try
             {
+#pragma warning disable 618
                 AppDomain.CurrentDomain.ExecuteAssembly(a.Location, 
-#if NET20 || NET35
                     AppDomain.CurrentDomain.Evidence,
-#endif
                     new string[] { "/nologo", "Config" });
+#pragma warning restore 618
             }
             finally
             {

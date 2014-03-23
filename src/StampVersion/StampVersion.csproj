@@ -11,26 +11,28 @@
     <RootNamespace>CSharpTest.Net.StampVersion</RootNamespace>
     <AssemblyName>StampVersion</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <OutputPath>..\..\bin\</OutputPath>
-    <IntermediateOutputPath>$(OutputPath)obj\$(AssemblyName)\</IntermediateOutputPath>
-    <DocumentationFile Condition="'$(OutputType)' == 'Library'">$(OutputPath)$(AssemblyName).xml</DocumentationFile>
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>pdbonly</DebugType>
-    <DefineConstants>NET20;TRACE</DefineConstants>
-    <ErrorReport>none</ErrorReport>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>3.5</OldToolsVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <Optimize>False</Optimize>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <Optimize>True</Optimize>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>none</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -51,5 +53,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

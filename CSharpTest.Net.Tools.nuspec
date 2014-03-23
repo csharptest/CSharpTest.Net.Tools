@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nuspec.xsd">
+  <metadata>
+    
+    <version>$version$</version>
+    <id>CSharpTest.Net.Tools</id>
+    <title>CSharpTest.Net.Tools</title>
+    <authors>Roger Knapp</authors>
+    <owners>Roger Knapp</owners>
+    <language>en-US</language>
+    <licenseUrl>http://csharptest.net/src/LICENSE-2.0.txt</licenseUrl>
+    <projectUrl>https://github.com/csharptest/CSharpTest.Net.Tools</projectUrl>
+    <iconUrl>http://csharptest.net/favicon.ico</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright 2008-2011 by Roger Knapp, Licensed under the Apache License, Version 2.0</copyright>
+
+    <tags>Tools Code Generator SingleFileGenerator MultipleFileGenerator ResX Exception MC Win32 Resource Copyright License AssemblyInfo AssemblyVersion Version</tags>
+    <summary>CSharpTest.Net.Tools is a collection command-line utilities for Visual Studio / build integration.</summary>
+    <releaseNotes>See the main project page (http://code.google.com/p/csharptest-net/) for release notes.</releaseNotes>
+    <description>
+    <![CDATA[==CSharpTest.Net.Tools==
+
+CmdTool.exe - provides a Visual Studio code generation integration to any command-line application.  
+see also http://help.csharptest.net/?CmdToolOverview.html
+  
+CSharpTest.Net.Generators.exe - provides a command-line replacement for ResX code generation with support for message files (.mc) and rich exception classes.  
+see also http://help.csharptest.net/?CSharpTest.Net.GeneratorsOverview.html
+
+StampCopyright.exe - provides a means to ensure all source code is automagically stamped with a copyright message header.  
+see also http://help.csharptest.net/?StampCopyrightOverview.html
+
+StampVersion.exe - provides the ability to scan for and replace versions in AssemblyInfo.cs files.  
+see also http://help.csharptest.net/?StampVersionOverview.html
+
+]]>
+    </description>
+
+  </metadata>
+  
+  <files>
+    <file src="readme.txt" target="\" />
+    <file src="CmdTool.config" target="content" />
+      
+	<!-- Tools v2.0 -->
+    <file src="src\CmdTool\bin\CmdTool.???" target="tools\net20" />
+    <file src="src\CmdTool\bin\CmdTool.exe.config" target="tools\net20" />
+    <file src="src\CSharpTest.Net.Generators\bin\CSharpTest.Net.Generators.???" target="tools\net20" />
+    <file src="src\StampCopyright\bin\StampCopyright.???" target="tools\net20" />
+    <file src="src\StampVersion\bin\StampVersion.???" target="tools\net20" />
+	
+	<!-- Tools v4.0 -->
+    <file src="src\CmdTool\bin\CmdTool.???" target="tools\net40" />
+    <file src="src\CmdTool\bin\CmdTool.exe.config" target="tools\net40" />
+    <file src="src\CSharpTest.Net.Generators\bin\net40\CSharpTest.Net.Generators.???" target="tools\net40" />
+    <file src="src\StampCopyright\bin\net40\StampCopyright.???" target="tools\net40" />
+    <file src="src\StampVersion\bin\net40\StampVersion.???" target="tools\net40" />
+
+    <file src="src\**\*.cs" target="src"/>
+  </files>
+  
+</package>

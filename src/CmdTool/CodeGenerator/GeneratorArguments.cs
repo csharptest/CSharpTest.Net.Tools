@@ -45,14 +45,70 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
 
             inputFile = Path.GetFullPath(inputFile);
 
+            _variables["SolutionDir"] = FindSolutionFolder(projectInfo);
+            _variables["PackageDir"] = FindPackageFolder(projectInfo);
             _variables["CmdToolDir"] = Path.GetDirectoryName(GetType().Assembly.Location).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
 			_variables["DefaultNamespace"] = item.DefaultNamespace;
             _variables["Namespace"] = item.Namespace;
-            _variables["ClassName"] = StronglyTypedResourceBuilder.VerifyResourceName(Path.GetFileNameWithoutExtension(inputFile), new CSharpCodeProvider());
+            _variables["ClassName"] = StronglyTypedResourceBuilder.VerifyResourceName(Path.GetFileNameWithoutExtension(inputFile) ?? "_", new CSharpCodeProvider());
 			_variables["PseudoPath"] = item.FullPseudoPath;
             _variables["InputPath"] = inputFile;
             _variables["InputName"] = Path.GetFileName(inputFile);
             _variables["InputDir"] = Path.GetDirectoryName(inputFile).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        }
+
+        private string FindSolutionFolder(IProjectInfo projectInfo)
+        {
+            string value = Environment.GetEnvironmentVariable("SolutionDir");
+            if (value != null || _variables.TryGetValue("SolutionDir", out value))
+            {
+                try
+                {
+                    return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(projectInfo.FullFileName), value))
+                               .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
+                           Path.DirectorySeparatorChar;
+                }
+                catch { }
+            }
+            try
+            {
+                var dir = new DirectoryInfo(Path.GetDirectoryName(projectInfo.FullFileName));
+                while (dir != null && dir.GetDirectories("packages").Length == 0 && dir.GetFiles("*.sln").Length == 0)
+                    dir = dir.Parent;
+
+                if (dir != null)
+                    return Path.GetFullPath(dir.FullName).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            }
+            catch { }
+
+            return "*Unknown*";
+        }
+
+        private string FindPackageFolder(IProjectInfo projectInfo)
+        {
+            string value = Environment.GetEnvironmentVariable("PackageDir");
+            if (value != null || _variables.TryGetValue("PackageDir", out value))
+            {
+                try
+                {
+                    return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(projectInfo.FullFileName), value))
+                               .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
+                           Path.DirectorySeparatorChar;
+                }
+                catch { }
+            }
+            try
+            {
+                var dir = new DirectoryInfo(Path.GetDirectoryName(projectInfo.FullFileName));
+                while (dir != null && dir.GetDirectories("packages").Length == 0)
+                    dir = dir.Parent;
+
+                if (dir != null)
+                    return Path.GetFullPath(dir.GetDirectories("packages")[0].FullName).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            }
+            catch { }
+
+            return "*Unknown*";
         }
 
         public event Action<string> OutputMessage;
@@ -95,6 +151,37 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
         }
 
         #region IGeneratorInput Members
+
+        public string this[string name] 
+        {
+            get { return _variables[name]; }
+            set
+            {
+                if (null != value && null != name){
+                Log.Verbose("SET {0} = {1}", name, value); 
+                _variables[name] = value;}
+            }
+        }
+
+        public string SolutionDir
+        {
+            get { return _variables["SolutionDir"]; }
+            set
+            {
+                _variables["SolutionDir"] = Path.GetFullPath(value).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                if (Directory.Exists(value) && Directory.Exists(Path.Combine(value, "packages")))
+                    PackageDir = Path.Combine(value, "packages"); 
+            }
+        }
+
+        public string PackageDir
+        {
+            get { return _variables["PackageDir"]; }
+            set 
+            {
+                _variables["PackageDir"] = Path.GetFullPath(value).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar; 
+            }
+        }
 
         public string Namespace
         {
@@ -180,10 +267,14 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
 
 			if (!_variables.TryGetValue(fld, out value))
 			{
-				DisplayHelp = true;
-				WriteLine("{0}: warning: Unknown variable {1}", InputPath, m.Value);
-				_help.WriteLine("Unknown variable {0}", m.Value);
-				value = String.Empty;
+			    value = Environment.GetEnvironmentVariable(fld);
+			    if (value == null)
+			    {
+			        DisplayHelp = true;
+			        WriteLine("{0}: warning: Unknown variable {1}", InputPath, m.Value);
+			        _help.WriteLine("Unknown variable {0}", m.Value);
+			        value = String.Empty;
+			    }
 			}
 
 			if (value != null && m.Groups["replace"].Success)

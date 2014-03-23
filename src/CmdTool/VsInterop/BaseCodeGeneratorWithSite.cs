@@ -141,7 +141,7 @@ namespace CSharpTest.Net.CustomTool.VsInterop
             return true;
         }
 
-        protected void AddFilesToProject(string[] filenames)
+        protected void AddFilesToProject(string[] filenames, string primaryFile)
         {
             EnvDTE.ProjectItem parent = this.ProjectItem;
             EnvDTE.ProjectItem item = null;
@@ -158,6 +158,8 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                     if (!filelist.Remove(child.Name))
                         child.Remove();
                 }
+
+                filelist.Remove(primaryFile);
 
                 foreach (string file in filelist.Values) 
                     parent.ProjectItems.AddFromFile(file);

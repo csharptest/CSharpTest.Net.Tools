@@ -67,6 +67,16 @@ namespace CSharpTest.Net.CustomTool.VsInterop
             GeneratorArguments arguments = new GeneratorArguments(false, inputFileName, defaultNamespace, project);
             arguments.OutputMessage += base.WriteLine;
 
+            if (Project != null)
+            {
+                try
+                {
+                    if (File.Exists(DTE.Solution.FileName))
+                        arguments.SolutionDir = Path.GetDirectoryName(DTE.Solution.FileName);
+                }
+                catch { }
+            }
+
             using (CmdToolBuilder builder = new CmdToolBuilder())
                 builder.Generate(arguments);
 
@@ -95,7 +105,7 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                 primaryFileName = Path.GetFileName(primaryFile.FileName);
             }
 
-            AddFilesToProject(addToProject.ToArray());
+            AddFilesToProject(addToProject.ToArray(), primaryFileName);
 
             string actualOutFile;
             if (Project != null && !IsLastGenOutputValid(primaryFileName, out actualOutFile))
@@ -119,7 +129,15 @@ namespace CSharpTest.Net.CustomTool.VsInterop
             if (arguments.DisplayHelp)
             {
                 string file = Path.Combine(Path.GetTempPath(), "CmdTool - Help.txt");
-                File.WriteAllText(file, arguments.Help());
+                using (var wtr = new StreamWriter(file))
+                {
+                    wtr.WriteLine(arguments.Help());
+                    wtr.WriteLine("ENVIRONMENT:");
+                    foreach (System.Collections.DictionaryEntry variable in Environment.GetEnvironmentVariables())
+                        wtr.WriteLine("{0} = '{1}'", variable.Key, variable.Value);
+                    wtr.Flush();
+                }
+
                 try
                 {
                     DTE.Documents.Open(file, "Auto", true);

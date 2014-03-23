@@ -202,7 +202,7 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
         {
 			if(!File.Exists(fileName))
 			{
-				WriteLine("Missing output file: " + fileName);
+			    Log.Verbose("Missing output file: " + fileName);
 				return;
 			}
 

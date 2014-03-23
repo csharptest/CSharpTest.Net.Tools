@@ -16,6 +16,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using CSharpTest.Net.IO;
 using CSharpTest.Net.Utils;
 using Microsoft.CSharp;
@@ -194,7 +195,15 @@ namespace CSharpTest.Net.Processes
             args.GenerateExecutable = true;
             args.IncludeDebugInformation = false;
             args.ReferencedAssemblies.Add("System.dll");
-            args.OutputAssembly = exe.TempPath;
+
+		    var imports = new Regex(@"^//#import\s+(?<file>[\w_-]+(?:\.[\w_-]+)*.dll)", RegexOptions.Multiline)
+                .Matches(script);
+            foreach (Match import in imports)
+            {
+                args.ReferencedAssemblies.Add(import.Groups["file"].Value);
+            }
+
+		    args.OutputAssembly = exe.TempPath;
             CompilerResults results = csc.CompileAssemblyFromSource(args, script);
 
             StringWriter sw = new StringWriter();

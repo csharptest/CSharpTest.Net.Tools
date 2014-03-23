@@ -13,6 +13,7 @@
  */
 #endregion
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -115,25 +116,51 @@ namespace CSharpTest.Net.CustomTool.VsInterop
             }
         }
 
-        protected void AddProjectFile(string filename)
+        protected bool IsLastGenOutputValid(string genOutputName, out string actual)
         {
-            if (!File.Exists(filename))
-                return;
+            actual = null;
 
+            EnvDTE.ProjectItem parent = this.ProjectItem;
+            if (parent != null)
+            {
+                for (int i = 1; genOutputName != null && i < parent.Properties.Count; i++)
+                {
+                    var prop = parent.Properties.Item(i);
+                    if (prop.Name == "CustomToolOutput" && prop.Value != null)
+                    {
+                        string value = actual = String.Format("{0}", prop.Value);
+                        if (!String.IsNullOrEmpty(value) &&
+                            !StringComparer.InvariantCultureIgnoreCase.Equals(genOutputName, value))
+                        {
+                            //
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        protected void AddFilesToProject(string[] filenames)
+        {
             EnvDTE.ProjectItem parent = this.ProjectItem;
             EnvDTE.ProjectItem item = null;
 
             if (parent != null)
             {
+                var filelist = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var file in filenames)
+                    filelist[Path.GetFileName(file)] = file;
+
                 for (int i = 1; item == null && i <= parent.ProjectItems.Count; i++)
                 {
                     EnvDTE.ProjectItem child = parent.ProjectItems.Item(i);
-                    if (StringComparer.OrdinalIgnoreCase.Equals(child.Name, Path.GetFileName(filename)))
-                        item = child;
+                    if (!filelist.Remove(child.Name))
+                        child.Remove();
                 }
 
-                if (item == null)
-                    item = parent.ProjectItems.AddFromFile(filename);
+                foreach (string file in filelist.Values) 
+                    parent.ProjectItems.AddFromFile(file);
             }
         }
 

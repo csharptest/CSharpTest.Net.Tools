@@ -14,6 +14,7 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Xml.Serialization;
 
 namespace CSharpTest.Net.CustomTool.XmlConfig
@@ -34,7 +35,13 @@ namespace CSharpTest.Net.CustomTool.XmlConfig
         [XmlAttribute("debug")]
         public bool Debug { get { return Config.VERBOSE || _debug; } set { _debug = value; } }
 
-		/// <summary> The format of the execute command-line, expanding environment variable with %var% </summary>
+	    [XmlAttribute("input-encoding"), DefaultValue(FileEncoding.Default)]
+	    public FileEncoding InputEncoding { get; set; }
+
+        [XmlAttribute("output-encoding"), DefaultValue(FileEncoding.Default)]
+        public FileEncoding OutputEncoding { get; set; }
+
+	    /// <summary> The format of the execute command-line, expanding environment variable with %var% </summary>
 		[XmlElement("script", typeof(GeneratorScript))]
 		[XmlElement("execute", typeof(GeneratorExecute))]
 		[XmlElement("assembly", typeof(AssemblyExecute))]
@@ -69,7 +76,17 @@ namespace CSharpTest.Net.CustomTool.XmlConfig
 	    }
 	}
 
-	public class GeneratorArgument
+    public enum FileEncoding
+    {
+        [XmlEnum("default")]
+        Default,
+        [XmlEnum("ascii")]
+        Ascii,
+        [XmlEnum("utf-8")]
+        Utf8,
+    }
+
+    public class GeneratorArgument
 	{
 		[XmlAttribute("value")]
 		public string Text;

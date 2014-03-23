@@ -13,12 +13,12 @@
  */
 #endregion
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using CSharpTest.Net.CustomTool.CodeGenerator;
 using CSharpTest.Net.CustomTool.Projects;
-using BE=Microsoft.Build.BuildEngine;
 
 #pragma warning disable 618
 
@@ -46,8 +46,9 @@ namespace CSharpTest.Net.CustomTool.VsInterop
 
         protected override byte[] GenerateCode(string defaultNamespace, string inputFileName)
         {
+            var Project = this.Project;
             byte[] resultBytes = null;
-            BE.Project project = null;
+            FauxProject project = null;
 
             if (Project != null)
             {
@@ -57,38 +58,26 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                     Project.Save(String.Empty);
                 }
 
-                project = BE.Engine.GlobalEngine.GetLoadedProject(Project.FullName);
-                if (project == null)
-                {
-                    project = new BE.Project(BE.Engine.GlobalEngine);
-                    try
-                    {
-                        project.Load(Project.FullName);
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteLine(ex.ToString());
-                    }
-                }
+                project = new FauxProject(Project.FullName);
             }
 
             if (project == null)
-                project = new Microsoft.Build.BuildEngine.Project(BE.Engine.GlobalEngine);
+                project = FauxProject.CreateEmpty(inputFileName);
 
-            GeneratorArguments arguments = new GeneratorArguments(false, inputFileName, defaultNamespace,
-                                                                  new MsBuildProject(project));
+            GeneratorArguments arguments = new GeneratorArguments(false, inputFileName, defaultNamespace, project);
             arguments.OutputMessage += base.WriteLine;
 
             using (CmdToolBuilder builder = new CmdToolBuilder())
                 builder.Generate(arguments);
 
+            var addToProject = new List<string>();
             GeneratorArguments.OutputFile primaryFile;
             foreach (GeneratorArguments.OutputFile file in arguments.GetOutput(out primaryFile))
             {
                 try
                 {
-                    if (file.AddToProject)
-                        AddProjectFile(file.FileName);
+                    if (file.AddToProject && File.Exists(file.FileName))
+                        addToProject.Add(file.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -96,13 +85,37 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                 }
             }
 
+            string primaryFileName = null;
             if (primaryFile != null)
             {
                 string testPrefix = Path.ChangeExtension(Path.GetFullPath(inputFileName), ".");
                 _lastGeneratedExtension = primaryFile.FileName.Substring(testPrefix.Length - 1);
                 resultBytes = Encoding.UTF8.GetBytes(File.ReadAllText(primaryFile.FileName));
+                addToProject.Add(primaryFile.FileName);
+                primaryFileName = Path.GetFileName(primaryFile.FileName);
             }
 
+            AddFilesToProject(addToProject.ToArray());
+
+            string actualOutFile;
+            if (Project != null && !IsLastGenOutputValid(primaryFileName, out actualOutFile))
+            {
+                Project.Save(String.Empty);
+                // Complete hack, we don't have the ability to edit these values...
+                string projectText = File.ReadAllText(project.FullFileName);
+                projectText = projectText.Replace(
+                    "<LastGenOutput>" + actualOutFile + "</LastGenOutput>",
+                    "<LastGenOutput>" + primaryFileName + "</LastGenOutput>");
+
+                arguments.WriteError(
+                    0, "The project item has an incorrect value for LastGenOutput, expected \"{0}\" found \"{1}\".\r\n" +
+                        "Press 'Discard' to correct or unload and edit the project.",
+                        primaryFileName, actualOutFile
+                    );
+
+                File.WriteAllText(project.FullFileName, projectText);
+            }
+            
             if (arguments.DisplayHelp)
             {
                 string file = Path.Combine(Path.GetTempPath(), "CmdTool - Help.txt");

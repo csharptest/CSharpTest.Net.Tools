@@ -92,6 +92,7 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
 		    foreach (FileMatch match in config.Matches)
 		    {
 		        string directory = Path.GetDirectoryName(_args.InputPath);
+                directory = CleanPath(directory);
 
 		        bool ismatch = false;
                 foreach (string file in Directory.GetFiles(directory, match.FileSpec))
@@ -101,7 +102,7 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
 
 		        ismatch = match.AppliesTo.Length == 0;
 		        foreach (MatchAppliesTo appliesTo in match.AppliesTo)
-                    ismatch |= directory.StartsWith(appliesTo.FolderPath, StringComparison.OrdinalIgnoreCase);
+                    ismatch |= directory.StartsWith(CleanPath(appliesTo.FolderPath), StringComparison.OrdinalIgnoreCase);
                 if (!ismatch)
                     continue;
 
@@ -127,6 +128,18 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
                 }
 		    }
 		}
+
+        private string CleanPath(string directory)
+        {
+            directory = directory.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            directory = Environment.ExpandEnvironmentVariables(directory);
+
+            if (Directory.Exists(directory))
+                directory = Path.GetFullPath(directory);
+
+            directory = directory.TrimEnd('.', Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return directory + Path.DirectorySeparatorChar;
+        }
 
         CmdToolConfig ReadAppConfig()
         {

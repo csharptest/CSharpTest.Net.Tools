@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using CSharpTest.Net.Commands;
 using CSharpTest.Net.CustomTool.XmlConfig;
 using CSharpTest.Net.IO;
@@ -57,6 +58,24 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
 
         public void Generate(IGeneratorArguments input)
         {
+            Encoding encoding;
+            //auto-convert input encoding to the correct type
+            if (_config.InputEncoding != FileEncoding.Default)
+            {
+                encoding = _config.InputEncoding == FileEncoding.Ascii ? Encoding.ASCII : Encoding.UTF8;
+                using (var r = new StreamReader(input.InputPath, detectEncodingFromByteOrderMarks: true))
+                {
+                    if (encoding.EncodingName != r.CurrentEncoding.EncodingName)
+                    {
+                        string text = r.ReadToEnd();
+                        r.Dispose();
+                        File.WriteAllText(input.InputPath, text, encoding);
+                    }
+                }
+            }
+
+            encoding = _config.OutputEncoding == FileEncoding.Ascii ? Encoding.ASCII : Encoding.UTF8;
+
             //Couple of assertions about PowerShell
             if (_config.Script.Type == ScriptEngine.Language.PowerShell &&
                 (_config.StandardInput.Redirect || _config.Arguments.Length > 0))
@@ -135,7 +154,7 @@ using the '-Command -' argument we avoid signing or setting ExecutionPolicy.");
                         string target = Path.ChangeExtension(input.InputPath, _config.StandardOut.Extension);
                         using (TempFile file = TempFile.FromExtension(_config.StandardOut.Extension))
                         {
-                            file.WriteAllText(swOutput.ToString());
+                            File.WriteAllText(file.TempPath, swOutput.ToString(), encoding);
                             File.Copy(file.TempPath, target, true);
                             input.AddOutputFile(target);
                         }

@@ -33,7 +33,21 @@ namespace CSharpTest.Net.CustomTool.Projects
 			_doc = new XmlLightDocument(projContent).Root;
 		}
 
-		public string FullFileName
+        private FauxProject(XmlLightElement doc, string path)
+        {
+            _doc = doc;
+            _path = path;
+        }
+
+	    public static FauxProject CreateEmpty(string baseName)
+	    {
+            return new FauxProject(
+                new XmlLightDocument("<Project ToolsVersion=\"4.0\"></Project>").Root,
+                Path.ChangeExtension(baseName, ".Missing.csproj")
+                );
+	    }
+
+	    public string FullFileName
 		{
 			get { return _path; }
 		}

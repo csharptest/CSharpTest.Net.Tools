@@ -32,7 +32,7 @@ namespace CSharpTest.Net.CustomTool.XmlConfig
 		[XmlIgnore]
 		internal string BaseDirectory { get { return _basePath; } set { _basePath = value; } }
 
-        [XmlAttribute("debug")]
+        [XmlAttribute("debug"), DefaultValue(false)]
         public bool Debug { get { return Config.VERBOSE || _debug; } set { _debug = value; } }
 
 	    [XmlAttribute("input-encoding"), DefaultValue(FileEncoding.Default)]

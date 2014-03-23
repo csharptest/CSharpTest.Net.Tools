@@ -11,8 +11,8 @@
       <xs:element minOccurs="0" maxOccurs="unbounded" name="applies-to" type="MatchAppliesTo" />
       <xs:element minOccurs="1" maxOccurs="unbounded" name="generator" type="GeneratorConfig" />
     </xs:sequence>
+    <xs:attribute default="false" name="stop" type="xs:boolean" />
     <xs:attribute name="filespec" type="FileMatchPattern" use="required" />
-    <xs:attribute name="stop" type="xs:boolean" use="optional" default="false" />
   </xs:complexType>
   <xs:complexType name="MatchAppliesTo">
     <xs:attribute name="folder" type="FilePathPattern" use="required"/>
@@ -21,39 +21,58 @@
     <xs:sequence>
       <xs:choice minOccurs="1" maxOccurs="1">
         <xs:element minOccurs="1" maxOccurs="1" name="script" type="GeneratorScript" />
-        <xs:element minOccurs="1" maxOccurs="1" name="execute" type="GeneratorExec" />
-        <xs:element minOccurs="1" maxOccurs="1" name="assembly" type="GeneratorExec" />
+        <xs:element minOccurs="1" maxOccurs="1" name="assembly" type="AssemblyExecute" />
+        <xs:element minOccurs="1" maxOccurs="1" name="execute" type="GeneratorExecute" />
       </xs:choice>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="arg" type="GeneratorArgument" />
       <xs:element minOccurs="0" maxOccurs="1" name="std-input" type="GeneratorInput" />
       <xs:element minOccurs="0" maxOccurs="1" name="std-output" type="GeneratorOutput" />
       <xs:element minOccurs="0" maxOccurs="unbounded" name="output" type="GeneratorOutput" />
     </xs:sequence>
-    <xs:attribute name="debug" type="xs:boolean" default="false" use="optional" />
+    <xs:attribute default="false" name="debug" type="xs:boolean" />
+    <xs:attribute default="default" name="input-encoding" type="FileEncoding" />
+    <xs:attribute default="default" name="output-encoding" type="FileEncoding" />
   </xs:complexType>
   <xs:complexType name="GeneratorScript">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute name="type" type="GeneratorScriptType" use="required"/>
+        <xs:attribute name="type" type="Language" use="required"/>
         <xs:attribute name="src" type="FilePathPattern" use="optional"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-  <xs:complexType name="GeneratorExec">
+  <xs:simpleType name="Language">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="JScript"/>
+      <xs:enumeration value="VBScript"/>
+      <xs:enumeration value="Cmd"/>
+      <xs:enumeration value="PowerShell"/>
+      <xs:enumeration value="CSharp"/>
+      <xs:enumeration value="VBNet"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="GeneratorExecute">
     <xs:simpleContent>
       <xs:extension base="xs:string">
         <xs:attribute name="exe" type="FilePathPattern" use="required"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
+  <xs:complexType name="AssemblyExecute">
+    <xs:simpleContent>
+      <xs:extension base="GeneratorScript">
+        <xs:attribute name="exe" type="xs:string" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="GeneratorOutput">
+    <xs:attribute name="extension" type="xs:string" use="required" />
+  </xs:complexType>
   <xs:complexType name="GeneratorArgument">
     <xs:attribute name="value" type="xs:string" use="required" />
   </xs:complexType>
   <xs:complexType name="GeneratorInput">
     <xs:attribute name="redirect" type="xs:boolean" use="required" />
-  </xs:complexType>
-  <xs:complexType name="GeneratorOutput">
-    <xs:attribute name="extension" type="xs:string" use="required" />
   </xs:complexType>
   <xs:simpleType name="FilePathPattern">
     <xs:restriction base="xs:string">
@@ -70,14 +89,11 @@
       <xs:pattern value="^.[^\\/:*?&quot;|&lt;&gt;]*$" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="GeneratorScriptType">
+  <xs:simpleType name="FileEncoding">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="JScript"/>
-      <xs:enumeration value="VBScript"/>
-      <xs:enumeration value="Cmd"/>
-      <xs:enumeration value="PowerShell"/>
-      <xs:enumeration value="CSharp"/>
-      <xs:enumeration value="VBNet"/>
+      <xs:enumeration value="default" />
+      <xs:enumeration value="ascii" />
+      <xs:enumeration value="utf-8" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

@@ -32,7 +32,7 @@ namespace CSharpTest.Net.CustomTool.XmlConfig
         public ScriptEngine.Language Type;
 
 		/// <summary> Includes a script file by prepending it's contents to the enclosed script block </summary>
-		[XmlAttribute("src")]
+        [XmlAttribute("src")]
     	public string Include;
 
         /// <summary> The script content </summary>

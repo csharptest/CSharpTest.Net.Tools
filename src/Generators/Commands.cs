@@ -15,13 +15,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using CSharpTest.Net.Commands;
 using CSharpTest.Net.Generators.ResX;
 using CSharpTest.Net.Generators.ResXtoMc;
-using CSharpTest.Net.Html;
-using CSharpTest.Net.IO;
-using CSharpTest.Net.Processes;
 
 namespace CSharpTest.Net.Generators
 {

@@ -37,7 +37,7 @@ namespace CSharpTest.Net.GeneratorsTest
 #pragma warning disable 618
                 AppDomain.CurrentDomain.ExecuteAssembly(a.Location, 
                     AppDomain.CurrentDomain.Evidence,
-                    new string[] { "/nologo", "Config" });
+                    new string[] { "Config" });
 #pragma warning restore 618
             }
             finally

@@ -78,7 +78,7 @@
     <Compile Include="Html\XmlLightNavigator.cs" />
     <Compile Include="Html\XmlLightParser.cs" />
     <Compile Include="IO\TempFile.cs" />
-    <Compile Include="Main.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Processes\IRunner.cs" />
     <Compile Include="Processes\ProcessExitedEventArgs.cs" />
     <Compile Include="Processes\ProcessOutputEventArgs.cs" />

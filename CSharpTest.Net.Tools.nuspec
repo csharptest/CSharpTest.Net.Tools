@@ -44,14 +44,14 @@ see also http://help.csharptest.net/?StampVersionOverview.html
 	<!-- Tools v2.0 -->
     <file src="src\CmdTool\bin\CmdTool.???" target="tools\net20" />
     <file src="src\CmdTool\bin\CmdTool.exe.config" target="tools\net20" />
-    <file src="src\CSharpTest.Net.Generators\bin\CSharpTest.Net.Generators.???" target="tools\net20" />
+    <file src="src\Generators\bin\CSharpTest.Net.Generators.???" target="tools\net20" />
     <file src="src\StampCopyright\bin\StampCopyright.???" target="tools\net20" />
     <file src="src\StampVersion\bin\StampVersion.???" target="tools\net20" />
 	
 	<!-- Tools v4.0 -->
     <file src="src\CmdTool\bin\CmdTool.???" target="tools\net40" />
     <file src="src\CmdTool\bin\CmdTool.exe.config" target="tools\net40" />
-    <file src="src\CSharpTest.Net.Generators\bin\net40\CSharpTest.Net.Generators.???" target="tools\net40" />
+    <file src="src\Generators\bin\net40\CSharpTest.Net.Generators.???" target="tools\net40" />
     <file src="src\StampCopyright\bin\net40\StampCopyright.???" target="tools\net40" />
     <file src="src\StampVersion\bin\net40\StampVersion.???" target="tools\net40" />
 

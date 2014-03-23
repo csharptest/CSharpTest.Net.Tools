@@ -81,7 +81,7 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
             }
             catch { }
 
-            return "*Unknown*";
+            return "*Undefined*";
         }
 
         private string FindPackageFolder(IProjectInfo projectInfo)
@@ -108,7 +108,7 @@ namespace CSharpTest.Net.CustomTool.CodeGenerator
             }
             catch { }
 
-            return "*Unknown*";
+            return "*Undefined*";
         }
 
         public event Action<string> OutputMessage;

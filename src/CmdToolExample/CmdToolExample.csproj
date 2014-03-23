@@ -59,7 +59,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CmdTool.config" />
+    <None Include="CmdTool.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Example4.test-cs">
       <Generator>CmdTool</Generator>
       <LastGenOutput>Example4.Designer.cs</LastGenOutput>

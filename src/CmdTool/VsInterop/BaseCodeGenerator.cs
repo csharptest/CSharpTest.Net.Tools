@@ -151,19 +151,23 @@ namespace CSharpTest.Net.CustomTool.VsInterop
 
         private static IEnumerable<string> GetRegistryKeysToAdd()
         {
-            string[] versions = new string[] {"8.0", "9.0", "10.0", "11.0"};
             string[] languages = new string[]
-                                     {
-                                         /* CSharp */ "{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}",
-                                                      /* CSEdit */ "{694DD9B6-B865-4C5B-AD85-86356E9C88DC}",
-                                                      /* VBProj */ "{164B10B9-B200-11D0-8C61-00A0C91E29D5}",
-                                                      /* VBEdit */ "{E34ACDC0-BAAE-11D0-88BF-00A0C9110049}",
-                                                      /* JSProj */ "{E6FDF8B0-F3D1-11D4-8576-0002A516ECE8}",
-                                                      /* JSEdit */ "{E6FDF88A-F3D1-11D4-8576-0002A516ECE8}",
-                                     };
-            foreach (string ver in versions)
+                {
+                    /* CSharp */ "{FAE04EC1-301F-11D3-BF4B-00C04F79EFBC}",
+                    /* CSEdit */ "{694DD9B6-B865-4C5B-AD85-86356E9C88DC}",
+                    /* VBProj */ "{164B10B9-B200-11D0-8C61-00A0C91E29D5}",
+                    /* VBEdit */ "{E34ACDC0-BAAE-11D0-88BF-00A0C9110049}",
+                    /* JSProj */ "{E6FDF8B0-F3D1-11D4-8576-0002A516ECE8}",
+                    /* JSEdit */ "{E6FDF88A-F3D1-11D4-8576-0002A516ECE8}",
+                };
+
+            foreach (string ver in new[] { "8.0", "9.0", "10.0" })
                 foreach (string lang in languages)
-                    yield return String.Format(@"SOFTWARE\Microsoft\VisualStudio\{0}\Generators\{1}\", ver, lang);
+                    yield return String.Format(@"HKLM\SOFTWARE\Microsoft\VisualStudio\{0}\Generators\{1}\", ver, lang);
+
+            foreach (string ver in new[] { "10.0_Config", "11.0_Config", "12.0_Config" })
+                foreach (string lang in languages)
+                    yield return String.Format(@"HKCU\Software\Microsoft\VisualStudio\{0}\Generators\{1}\", ver, lang);
         }
 
         /// <summary>
@@ -177,20 +181,36 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                 object[] attribs = t.GetCustomAttributes(typeof (GuidAttribute), true);
                 if (attribs.Length == 0)
                     return;
-                string GUID = "{" + ((GuidAttribute) attribs[0]).Value.ToUpper() + "}";
+                string guid = "{" + ((GuidAttribute) attribs[0]).Value.ToUpper() + "}";
 
                 foreach (string keypath in GetRegistryKeysToAdd())
-                    using (RegistryKey key = Registry.LocalMachine.CreateSubKey(keypath + t.Name))
+                {
+                    var hive = keypath.Substring(0, 4);
+                    var path = keypath.Substring(5);
+                    if (hive == "HKLM")
+                        WriteRegEntry(Registry.LocalMachine, path, t, guid);
+                    else
                     {
-                        Check.Assert<UnauthorizedAccessException>(key != null);
-                        key.SetValue("CLSID", GUID, RegistryValueKind.String);
-                        key.SetValue("GeneratesDesignTimeSource", 1, RegistryValueKind.DWord);
-                        key.Close();
+                        WriteRegEntry(Registry.Users, @".DEFAULT\" + path, t, guid);
+                        WriteRegEntry(Registry.CurrentUser, path, t, guid);
                     }
+                }
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e.ToString());
+            }
+        }
+
+        private static void WriteRegEntry(RegistryKey hive, string path, Type t, string guid)
+        {
+            using (RegistryKey key = hive.CreateSubKey(path + t.Name))
+            {
+                Check.Assert<UnauthorizedAccessException>(key != null);
+                key.SetValue("", "CmdTool by CSharpTest.Net", RegistryValueKind.String);
+                key.SetValue("CLSID", guid, RegistryValueKind.String);
+                key.SetValue("GeneratesDesignTimeSource", 1, RegistryValueKind.DWord);
+                key.Close();
             }
         }
 
@@ -203,7 +223,18 @@ namespace CSharpTest.Net.CustomTool.VsInterop
             try
             {
                 foreach (string keypath in GetRegistryKeysToAdd())
-                    Registry.LocalMachine.DeleteSubKey(keypath + t.Name, false);
+                {
+                    var hive = keypath.Substring(0, 4);
+                    var path = keypath.Substring(5);
+
+                    if (hive == "HKLM")
+                        Registry.LocalMachine.DeleteSubKey(path + t.Name, false);
+                    else
+                    {
+                        Registry.Users.DeleteSubKey(@".DEFAULT\" + path + t.Name, false);
+                        Registry.CurrentUser.DeleteSubKey(path + t.Name, false);
+                    }
+                }
             }
             catch (Exception e)
             {

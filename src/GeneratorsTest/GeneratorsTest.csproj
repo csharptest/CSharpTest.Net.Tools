@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CSharpTest.Net.GeneratorsTest</RootNamespace>
-    <AssemblyName>CSharpTest.Net.GeneratorsTest</AssemblyName>
+    <AssemblyName>CSharpTest.Net.Generators.Test</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

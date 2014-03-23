@@ -71,7 +71,7 @@ namespace CSharpTest.Net.CustomTool
 			return Environment.ExitCode = result;
 		}
 
-		[Command("register", "install", Description="Registers the CmdTool custom generator with Visual Studio 2005, 2008, and 2010")]
+		[Command("register", "install", Description="Registers the CmdTool custom generator with Visual Studio 2005-2013")]
 		public static void Register()
 		{
 			try
@@ -82,7 +82,7 @@ namespace CSharpTest.Net.CustomTool
 			catch (Exception e) { throw new ApplicationException(e.Message, e); }
 		}
 
-		[Command("unregister", "uninstall", Description = "Removes the CmdTool custom generator from Visual Studio 2005, 2008, and 2010")]
+        [Command("unregister", "uninstall", Description = "Removes the CmdTool custom generator from Visual Studio 2005-2013")]
 		public static void Unregister()
 		{
 			try

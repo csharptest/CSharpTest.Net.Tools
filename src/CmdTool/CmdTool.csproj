@@ -24,6 +24,7 @@
     <ErrorReport>none</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -34,6 +35,7 @@
     <ErrorReport>none</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, PublicKeyToken=b03f5f7f11d50a3a">
@@ -154,7 +156,7 @@
   <PropertyGroup>
     <SDKDIR>$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows@CurrentInstallFolder)</SDKDIR>
   </PropertyGroup>
-  <Target Name="AfterBuild" Condition=" '$(TargetFrameworkVersion)' == 'v2.0' ">
+  <Target Name="AfterBuild" Condition=" '$(TargetFrameworkVersion)|$(PlatformTarget)' == 'v2.0|AnyCPU' ">
     <Exec Command="&quot;$(SDKDIR)\bin\xsd.exe&quot; /nologo &quot;$(TargetPath)&quot; /type:CSharpTest.Net.CustomTool.XmlConfig.CmdToolConfig &quot;/out:$(TargetDir).&quot;" IgnoreExitCode="true" />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -181,7 +181,7 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                 object[] attribs = t.GetCustomAttributes(typeof (GuidAttribute), true);
                 if (attribs.Length == 0)
                     return;
-                string guid = "{" + ((GuidAttribute) attribs[0]).Value.ToUpper() + "}";
+                string guid = "{" + ((GuidAttribute)attribs[0]).Value.ToUpper().Trim('{', '}') + "}";
 
                 foreach (string keypath in GetRegistryKeysToAdd())
                 {

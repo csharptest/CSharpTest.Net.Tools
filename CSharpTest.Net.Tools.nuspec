@@ -32,6 +32,8 @@ see also http://help.csharptest.net/?StampCopyrightOverview.html
 StampVersion.exe - provides the ability to scan for and replace versions in AssemblyInfo.cs files.  
 see also http://help.csharptest.net/?StampVersionOverview.html
 
+AssemblyFileProcessor.exe - provides the ability to replace assembly attribute values in AssemblyInfo.cs files.  
+
 ]]>
     </description>
 
@@ -47,7 +49,7 @@ see also http://help.csharptest.net/?StampVersionOverview.html
     <file src="src\Generators\bin\CSharpTest.Net.Generators.???" target="tools\net20" />
     <file src="src\StampCopyright\bin\StampCopyright.???" target="tools\net20" />
     <file src="src\StampVersion\bin\StampVersion.???" target="tools\net20" />
-    <file src="src\StampVersion\bin\AssemblyInfoPatcher.???" target="tools\net20" />
+    <file src="src\AssemblyInfoPatcher\bin\AssemblyInfoPatcher.???" target="tools\net20" />
 	
 	<!-- Tools v4.0 -->
     <file src="src\CmdTool\bin\CmdTool.???" target="tools\net40" />
@@ -55,7 +57,7 @@ see also http://help.csharptest.net/?StampVersionOverview.html
     <file src="src\Generators\bin\net40\CSharpTest.Net.Generators.???" target="tools\net40" />
     <file src="src\StampCopyright\bin\net40\StampCopyright.???" target="tools\net40" />
     <file src="src\StampVersion\bin\net40\StampVersion.???" target="tools\net40" />
-    <file src="src\StampVersion\bin\net40\AssemblyInfoPatcher.???" target="tools\net40" />
+    <file src="src\AssemblyInfoPatcher\bin\net40\AssemblyInfoPatcher.???" target="tools\net40" />
 
     <file src="src\**\*.cs" target="src"/>
   </files>

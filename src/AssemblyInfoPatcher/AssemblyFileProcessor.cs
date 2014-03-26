@@ -25,26 +25,35 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
         #endregion
         private readonly Regex _pattern;
         private readonly ArgumentList _args;
-        private Dictionary<string, string> _variables; 
+        private readonly bool _addMissing;
+        private Dictionary<string, string> _variables;
+        private Dictionary<string, string> _todo; 
 
-        public AssemblyFileProcessor(ArgumentList args)
+        public AssemblyFileProcessor(ArgumentList args, bool addMissing)
         {
             _args = args;
+            _addMissing = addMissing;
             _pattern = new Regex(MatchAttribute, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase);
             _variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _todo = new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
         public void ProcessFile(FileInfo file)
         {
             _variables.Clear();
+            _todo.Clear();
+
+            if (_addMissing)
+            {
+                foreach (var item in _args)
+                    _todo.Add(item.Name, item.Value);
+            }
+
             var projFiles = new List<FileInfo>(file.Directory.GetFiles("*.csproj"));
             if (file.Directory.Parent != null)
                 projFiles.AddRange(file.Directory.Parent.GetFiles("*.csproj"));
             if (projFiles.Count > 0)
                 ReadProjectValues(projFiles[0]);
-
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InstalledUICulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
 
             bool detect;
             using (var io = new FileStream(file.FullName, FileMode.Open, FileAccess.Read))
@@ -63,6 +72,12 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
             }
 
             string modified = _pattern.Replace(text, ReplaceValue);
+
+            if (_todo.Count > 0)
+            {
+                string newText = AddMisingAttributes(modified.EndsWith(Environment.NewLine) ? modified.EndsWith(Environment.NewLine + Environment.NewLine) ? 0 : 1 : 2);
+                modified += _pattern.Replace(newText, ReplaceValue);
+            }
 
             if (text != modified)
             {
@@ -101,6 +116,8 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
             string value;
             if (_args.TryGetValue(name, out value) || _args.TryGetValue(name + "Attribute", out value))
             {
+                _todo.Remove(name);
+
                 var quoted = match.Groups["Quoted"].Success;
                 var contentGroup = match.Groups["Content"];
 
@@ -173,6 +190,57 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
                 sb.Append((char)('0' + (ch & 7)));
             }
             sb.Append('"');
+            return sb.ToString();
+        }
+
+        private string AddMisingAttributes(int addnewline)
+        {
+            var sb = new StringBuilder();
+            while (addnewline-- > 0)
+                sb.AppendLine();
+
+            sb.AppendLine("// Added by AssemblyInfoPatcher on " + DateTime.Now.ToShortDateString());
+            foreach (var item in _todo)
+            {
+                string name = item.Key;
+                string value = "xxx";
+
+                bool typeFound = false;
+                bool quote = false;
+                if (name.EndsWith("Attribute") == false)
+                    name += "Attribute";
+
+                try
+                {
+                    var namespaces = new[]
+                    {"System.Reflection", "System.Runtime.CompilerServices", "System.Runtime.InteropServices"};
+
+                    foreach (var ns in namespaces)
+                    {
+                        Type t = Type.GetType(ns + '.' + name, false);
+                        typeFound = (t != null);
+                        if (typeFound)
+                        {
+                            name = t.FullName;
+                            foreach (var ctr in t.GetConstructors())
+                            {
+                                var param = ctr.GetParameters();
+                                if (param.Length == 1 && param[0].ParameterType == typeof (String))
+                                    quote = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+                catch { }
+
+                if (!typeFound || quote)
+                    value = "\"\"";
+
+                sb.AppendFormat("[assembly: {0}({1})]", name, value);
+                sb.AppendLine();
+            }
+
             return sb.ToString();
         }
     }

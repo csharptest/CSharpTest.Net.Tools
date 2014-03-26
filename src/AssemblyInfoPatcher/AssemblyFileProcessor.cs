@@ -127,6 +127,12 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
                 value = Environment.ExpandEnvironmentVariables(value);
                 value = RegexPatterns.MakefileMacro.Replace(value, ReplaceVariable);
 
+                // special case for GuidAttribute:
+                if (StringComparer.Ordinal.Equals("Guid", name))
+                {
+                    value = new Guid(value).ToString("D");
+                }
+
                 if (quoted)
                     value = MakeString(value);
                 replacement += value;
@@ -185,9 +191,8 @@ namespace CSharpTest.Net.AssemblyInfoPatcher
                 if (ch == '\t') { sb.Append("\\t"); continue; }
 
                 sb.Append('\\');
-                sb.Append((char)('0' + ((ch >> 6) & 3)));
-                sb.Append((char)('0' + ((ch >> 3) & 7)));
-                sb.Append((char)('0' + (ch & 7)));
+                sb.Append('x');
+                sb.Append(((int)ch).ToString("x4"));
             }
             sb.Append('"');
             return sb.ToString();

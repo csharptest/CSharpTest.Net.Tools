@@ -60,9 +60,8 @@ namespace CSharpTest.Net.Generators
                 if (ch == '\t') { sb.Append("\\t"); continue; }
 
                 sb.Append('\\');
-                sb.Append((char)('0' + ((ch >> 6) & 3)));
-                sb.Append((char)('0' + ((ch >> 3) & 7)));
-                sb.Append((char)('0' + (ch & 7)));
+                sb.Append('x');
+                sb.Append(((int)ch).ToString("x4"));
             }
             sb.Append('"');
             return sb.ToString();

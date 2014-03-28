@@ -95,11 +95,12 @@ namespace CSharpTest.Net.Generators
 
         public void WriteClassPreamble()
         {
-            Assembly generator = Assembly.GetCallingAssembly() ?? Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly() ?? GetType().Assembly;
             WriteLine("[global::System.Diagnostics.DebuggerStepThroughAttribute()]");
             WriteLine("[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]");
             WriteLine("[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]");
-            WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", generator.GetName().Name, generator.GetName().Version);
+            Assembly generator = Assembly.GetCallingAssembly() ?? Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly() ?? GetType().Assembly;
+            string clrversion = typeof(System.Int16).Assembly.GetName().Version.ToString(2);
+            WriteLine("[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{0}\", \"{1}\")]", generator.GetName().Name, clrversion);
         }
 
         public IDisposable WriteClass(string format, params object[] args)

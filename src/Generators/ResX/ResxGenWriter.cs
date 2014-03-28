@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Resources;
 using System.Resources.Tools;
+using System.Text.RegularExpressions;
 using CSharpTest.Net.Generators.ResX.Writers;
 using Microsoft.CSharp;
 
@@ -148,15 +149,23 @@ namespace CSharpTest.Net.Generators.ResX
 			options.BracingStyle = "C";
 			options.IndentString = "    ";
 
+		    string result;
 			using (StringWriter swCode = new StringWriter())
 			{
 				Csharp.GenerateCodeFromCompileUnit(unit, swCode, options);
-				string result = swCode.ToString();
-
-                if (_partial)
-                    result = result.Replace(" class ", " partial class ");
-			    return result;
+				result = swCode.ToString();
 			}
+
+            if (_partial)
+                result = result.Replace(" class ", " partial class ");
+
+		    result = Regex.Replace(
+		        result,
+		        @"(?im-snx:(?<=^//\s*Runtime\s*Version\s*:\s*)\d{1,5}(\.\d{1,5}){0,3})",
+		        m => new Version(m.Value).ToString(2)
+		        );
+
+			return result;
 		}
 
 		void WriteFormatters(CsWriter code)

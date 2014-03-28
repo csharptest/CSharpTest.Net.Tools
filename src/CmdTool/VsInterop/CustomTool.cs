@@ -107,25 +107,31 @@ namespace CSharpTest.Net.CustomTool.VsInterop
 
             AddFilesToProject(addToProject.ToArray(), primaryFileName);
 
-            string actualOutFile;
-            if (Project != null && !IsLastGenOutputValid(primaryFileName, out actualOutFile))
+            try
             {
-                Project.Save(String.Empty);
-                // Complete hack, we don't have the ability to edit these values...
-                string projectText = File.ReadAllText(project.FullFileName);
-                projectText = projectText.Replace(
-                    "<LastGenOutput>" + actualOutFile + "</LastGenOutput>",
-                    "<LastGenOutput>" + primaryFileName + "</LastGenOutput>");
+                string actualOutFile;
+                if (Project != null && primaryFileName != null && !IsLastGenOutputValid(primaryFileName, out actualOutFile))
+                {
+                    Project.Save(String.Empty);
+                    // Complete hack, we don't have the ability to edit these values...
+                    string projectText = File.ReadAllText(project.FullFileName);
+                    projectText = projectText.Replace(
+                        "<LastGenOutput>" + actualOutFile + "</LastGenOutput>",
+                        "<LastGenOutput>" + primaryFileName + "</LastGenOutput>");
 
-                arguments.WriteError(
-                    0, "The project item has an incorrect value for LastGenOutput, expected \"{0}\" found \"{1}\".\r\n" +
+                    arguments.WriteError(
+                        0,
+                        "The project item has an incorrect value for LastGenOutput, expected \"{0}\" found \"{1}\".\r\n" +
                         "Press 'Discard' to correct or unload and edit the project.",
                         primaryFileName, actualOutFile
-                    );
+                        );
 
-                File.WriteAllText(project.FullFileName, projectText);
+                    File.WriteAllText(project.FullFileName, projectText);
+                }
             }
-            
+            catch
+            { /* Ignore */ }
+
             if (arguments.DisplayHelp)
             {
                 string file = Path.Combine(Path.GetTempPath(), "CmdTool - Help.txt");

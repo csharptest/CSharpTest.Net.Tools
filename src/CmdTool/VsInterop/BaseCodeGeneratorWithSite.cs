@@ -159,7 +159,8 @@ namespace CSharpTest.Net.CustomTool.VsInterop
                         child.Remove();
                 }
 
-                filelist.Remove(primaryFile);
+                if (primaryFile != null)
+                    filelist.Remove(primaryFile);
 
                 foreach (string file in filelist.Values) 
                     parent.ProjectItems.AddFromFile(file);
